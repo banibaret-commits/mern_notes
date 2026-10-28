@@ -20,34 +20,34 @@ jobs:
 
       - name: Build images for the supplied tests
         run: docker compose -f compose.test.yaml build
-
+ 
       - name: Run backend API tests
         run: docker compose -f compose.test.yaml run --rm backend-test
-
+ 
       - name: Run frontend tests
         run: docker compose -f compose.test.yaml run --rm frontend-test
-
+ 
       - name: Check backend code style
         run: docker compose -f compose.test.yaml run --rm backend-test npm run lint
-
+ 
       - name: Check backend TypeScript
         run: docker compose -f compose.test.yaml run --rm backend-test npm run typecheck
-
+ 
       - name: Prepare image names
         shell: bash
         run: |
           repository="${GITHUB_REPOSITORY,,}"
           echo "BACKEND_IMAGE=ghcr.io/${repository}-backend" >> "$GITHUB_ENV"
           echo "FRONTEND_IMAGE=ghcr.io/${repository}-frontend" >> "$GITHUB_ENV"
-
+     
       - name: Build backend image
         run: |
           docker build --label "org.opencontainers.image.source=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" -t "$BACKEND_IMAGE:latest" -t "$BACKEND_IMAGE:sha-$GITHUB_SHA" ./backend
-
+ 
       - name: Build frontend image
         run: |
           docker build --label "org.opencontainers.image.source=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" -t "$FRONTEND_IMAGE:latest" -t "$FRONTEND_IMAGE:sha-$GITHUB_SHA" ./frontend
-
+ 
       - name: Log in to GHCR
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: docker/login-action@v4
@@ -55,7 +55,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
+ 
       - name: Publish both images
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
